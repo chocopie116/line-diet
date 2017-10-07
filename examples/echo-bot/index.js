@@ -3,7 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const fs = require('fs');
-const mam = require('./mam');
+const request = require('request');
 
 // create LINE SDK config from env variables
 const config = {
@@ -61,15 +61,29 @@ function handleEvent(event) {
       const img = Buffer.concat(data);
       fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
         console.log(err);
-        mam.getCalMamData('./tmp/image.jpg', (result) => {
+        getCalMamData('./tmp/image.jpg', (result) => {
           // JSON.stringify(result);
           const num = result[0].items.length;
           const echo = {type: 'text', text: num};
           return client.replyMessage(event.replyToken, echo);
         });
-      });
-    });
+      }); });
   }
+}
+
+function getCalMamData(data_url, callback) {
+  var url = 'https://api-2445582032290.production.gw.apicast.io/v1/foodrecognition?user_key=' + process.env.MAM_KEY;
+  var formData = {
+    'media': fs.createReadStream(data_url)
+  };
+  request.post({url:url, formData:formData}, function(err, rew, body) {
+    if(err) {
+      console.log(err);
+    } else {
+      var get_data = JSON.parse(body);
+      callback(get_data['results']);
+    }
+  });
 }
 
 // listen on port
