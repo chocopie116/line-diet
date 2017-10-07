@@ -62,6 +62,7 @@ function handleEvent(event) {
       fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
         let message = {type: 'text', text: ''};
         if (err) {
+          console.log(err);
           message.text ='ファイルのアップロードに失敗';
 
           return client.replyMessage(event.replyToken, message);
