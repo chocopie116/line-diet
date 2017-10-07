@@ -65,3 +65,4 @@ _book
 
 bin
 .env
+tmp/*.jpg
