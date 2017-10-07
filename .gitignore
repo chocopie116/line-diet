@@ -65,3 +65,7 @@ _book
 
 bin
 .env
+tmp/*.jpg
+tmp/*.jpeg
+tmp/*.png
+tmp/*.gif
