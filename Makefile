@@ -25,7 +25,7 @@ tunnel:
 	./bin/ngrok http 3000
 
 run:
-	$(NODE) examples/echo-bot/index.js
+	source .env && $(NODE) examples/echo-bot/index.js
 
 .env:
 	cp .env.sample .env
