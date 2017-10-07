@@ -3,6 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const fs = require('fs');
+const easyimg = require('easyimage');
 const request = require('request');
 
 // create LINE SDK config from env variables
@@ -19,7 +20,6 @@ const client = new line.Client(config);
 const app = express();
 
 app.get('/', line.middleware(config), (req, res) => {
-  console.log("root");
 });
 
 // register a webhook handler with middleware
@@ -59,15 +59,27 @@ function handleEvent(event) {
 
     stream.on('end', () => {
       const img = Buffer.concat(data);
-      fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
-        console.log(err);
-        getCalMamData('./tmp/image.jpg', (result) => {
-          // JSON.stringify(result);
-          const text = createMessage(result);
-          const echo = {type: 'text', text: text};
-          return client.replyMessage(event.replyToken, echo);
-        });
-      }); });
+      const filepath = './tmp/image.jpg';
+      const dstpath = './tmp/resized.jpg';
+      fs.writeFile(filepath, img, 'binary', (err) => {
+        if (err) return console.log(err);
+        const option = { src: filepath, dst: dstpath, width: 544, height: 544 };
+        easyimg.resize( option ).then(
+          ( file ) => {
+            // 成功した場合の処理
+            // console.log("success resize");
+            getCalMamData(dstpath, (result) => {
+              const text = createMessage(result);
+              const echo = {type: 'text', text: text};
+              return client.replyMessage(event.replyToken, echo);
+            });
+          },
+          ( err ) => {
+            console.log(err);
+          }
+        );
+      });
+    });
   }
 }
 
@@ -77,7 +89,7 @@ function createMessage(resultFromMam) {
   }
   const name = resultFromMam[0].items[0].name;
   const nutrition = resultFromMam[0].items[0].nutrition;
-  const calories = resultFromMam[0].items[0].nutrition.calories;  
+  const calories = resultFromMam[0].items[0].nutrition.calories;
   return  name + "は" + calories + "kcalです";
 }
 
