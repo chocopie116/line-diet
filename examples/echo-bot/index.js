@@ -39,7 +39,7 @@ function handleEvent(event) {
   // create a echoing text message
   if (event.message.type==='text') {
       const echo = { type: 'text', text: event.message.text };
-      return client.replyMessage(event.replyToken, echo);      
+      return client.replyMessage(event.replyToken, echo);
   } else if (event.message.type==='image') {
     const messageId = event.message.id;
     const stream = client.getMessageContent(messageId);
@@ -56,11 +56,11 @@ function handleEvent(event) {
     stream.on('end', () => {
       const img = Buffer.concat(data);
       console.log(img);
-      fs.writeFile('./examples/echo-bot/image/image.jpg', img, 'binary', (err) => {
+      fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
         console.log(err);
-        const echo = {type: 'text', text: "received"};      
+        const echo = {type: 'text', text: "received"};
         return client.replyMessage(event.replyToken, echo);
-      });      
+      });
     });
   }
 }
