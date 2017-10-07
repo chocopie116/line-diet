@@ -1,0 +1,10 @@
+{
+  "name": "line-diet",
+  "description": "lose weight by line bot",
+  "keywords": [
+    "node.js",
+    "mysql"
+  ],
+  "addons": ["cleardb:ignite"],
+  "env": {}
+}
