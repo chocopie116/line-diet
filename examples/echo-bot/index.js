@@ -3,6 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const fs = require('fs');
+const easyimg = require('easyimage');
 const mam = require('./mam');
 
 // create LINE SDK config from env variables
@@ -19,7 +20,6 @@ const client = new line.Client(config);
 const app = express();
 
 app.get('/', line.middleware(config), (req, res) => {
-  console.log("root");
 });
 
 // register a webhook handler with middleware
@@ -59,14 +59,25 @@ function handleEvent(event) {
 
     stream.on('end', () => {
       const img = Buffer.concat(data);
-      fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
-        console.log(err);
-        mam.getCalMamData('./tmp/image.jpg', (result) => {
-          // JSON.stringify(result);
-          const num = result[0].items.length;
-          const echo = {type: 'text', text: num};
-          return client.replyMessage(event.replyToken, echo);
-        });
+      const filepath = './tmp/image.jpg';
+      const dstpath = './tmp/resized.jpg';
+      fs.writeFile(filepath, img, 'binary', (err) => {
+        if (err) return console.log(err);
+        const option = { src: filepath, dst: dstpath, width: 544, height: 544 };
+        easyimg.resize( option ).then(
+          ( file ) => {
+            // 成功した場合の処理
+            // console.log("success resize");
+            mam.getCalMamData(dstpath, (result) => {
+              const num = result[0].items.length;
+              const echo = {type: 'text', text: num};
+              return client.replyMessage(event.replyToken, echo);
+            });
+          },
+          ( err ) => {
+            console.log(err);
+          }
+        );
       });
     });
   }
