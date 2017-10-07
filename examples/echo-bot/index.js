@@ -3,6 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const fs = require('fs');
+const mam = require('./mam');
 
 // create LINE SDK config from env variables
 const config = {
@@ -26,7 +27,10 @@ app.get('/', line.middleware(config), (req, res) => {
 app.post('/webhook', line.middleware(config), (req, res) => {
   Promise
     .all(req.body.events.map(handleEvent))
-    .then((result) => res.json(result));
+    .then((result) => res.json(result))
+    .catch((err) => {
+      console.log(err);
+    });
 });
 
 // event handler
@@ -55,11 +59,14 @@ function handleEvent(event) {
 
     stream.on('end', () => {
       const img = Buffer.concat(data);
-      console.log(img);
       fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
         console.log(err);
-        const echo = {type: 'text', text: "received"};
-        return client.replyMessage(event.replyToken, echo);
+        mam.getCalMamData('./tmp/image.jpg', (result) => {
+          // JSON.stringify(result);
+          const num = result[0].items.length;
+          const echo = {type: 'text', text: num};
+          return client.replyMessage(event.replyToken, echo);
+        });
       });
     });
   }
