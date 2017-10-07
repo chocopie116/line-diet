@@ -63,12 +63,22 @@ function handleEvent(event) {
         console.log(err);
         getCalMamData('./tmp/image.jpg', (result) => {
           // JSON.stringify(result);
-          const num = result[0].items.length;
-          const echo = {type: 'text', text: num};
+          const text = createMessage(result);
+          const echo = {type: 'text', text: text};
           return client.replyMessage(event.replyToken, echo);
         });
       }); });
   }
+}
+
+function createMessage(resultFromMam) {
+  if (!resultFromMam) {
+    return "わかんない"
+  }
+  const name = resultFromMam[0].items[0].name;
+  const nutrition = resultFromMam[0].items[0].nutrition;
+  const calories = resultFromMam[0].items[0].nutrition.calories;  
+  return  name + "は" + calories + "kcalです";
 }
 
 function getCalMamData(data_url, callback) {
