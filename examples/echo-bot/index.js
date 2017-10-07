@@ -4,7 +4,7 @@ const line = require('@line/bot-sdk');
 const express = require('express');
 const fs = require('fs');
 const easyimg = require('easyimage');
-const mam = require('./mam');
+const request = require('request');
 
 // create LINE SDK config from env variables
 const config = {
@@ -68,9 +68,9 @@ function handleEvent(event) {
           ( file ) => {
             // 成功した場合の処理
             // console.log("success resize");
-            mam.getCalMamData(dstpath, (result) => {
-              const num = result[0].items.length;
-              const echo = {type: 'text', text: num};
+            getCalMamData(dstpath, (result) => {
+              const text = createMessage(result);
+              const echo = {type: 'text', text: text};
               return client.replyMessage(event.replyToken, echo);
             });
           },
@@ -81,6 +81,31 @@ function handleEvent(event) {
       });
     });
   }
+}
+
+function createMessage(resultFromMam) {
+  if (!resultFromMam) {
+    return "わかんない"
+  }
+  const name = resultFromMam[0].items[0].name;
+  const nutrition = resultFromMam[0].items[0].nutrition;
+  const calories = resultFromMam[0].items[0].nutrition.calories;
+  return  name + "は" + calories + "kcalです";
+}
+
+function getCalMamData(data_url, callback) {
+  var url = 'https://api-2445582032290.production.gw.apicast.io/v1/foodrecognition?user_key=' + process.env.MAM_KEY;
+  var formData = {
+    'media': fs.createReadStream(data_url)
+  };
+  request.post({url:url, formData:formData}, function(err, rew, body) {
+    if(err) {
+      console.log(err);
+    } else {
+      var get_data = JSON.parse(body);
+      callback(get_data['results']);
+    }
+  });
 }
 
 // listen on port
