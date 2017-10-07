@@ -1,7 +1,3 @@
-#適当に叩くコマンドたたいてく
-#setup:
-#  wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-darwin-amd64.zip
-#
 HEROKU =$(shell which heroku)
 NPM=$(shell which npm)
 WGET=$(shell which wget)
