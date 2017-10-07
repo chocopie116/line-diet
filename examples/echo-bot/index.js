@@ -60,24 +60,12 @@ function handleEvent(event) {
     stream.on('end', () => {
       const img = Buffer.concat(data);
       fs.writeFile('./tmp/image.jpg', img, 'binary', (err) => {
-        let message = {type: 'text', text: ''};
-        if (err) {
-          console.log(err);
-          message.text ='ファイルのアップロードに失敗';
-
-          return client.replyMessage(event.replyToken, message);
-        }
-
+        console.log(err);
         getCalMamData('./tmp/image.jpg', (result) => {
-          if (!result) {
-            message.text = 'なんか変だよ';
-            return client.replyMessage(event.replyToken, message);
-          }
-
           // JSON.stringify(result);
           const num = result[0].items.length;
-          message.text = num;
-          return client.replyMessage(event.replyToken, message);
+          const echo = {type: 'text', text: num};
+          return client.replyMessage(event.replyToken, echo);
         });
       }); });
   }
@@ -91,11 +79,10 @@ function getCalMamData(data_url, callback) {
   request.post({url:url, formData:formData}, function(err, rew, body) {
     if(err) {
       console.log(err);
-      return callback(null);
+    } else {
+      var get_data = JSON.parse(body);
+      callback(get_data['results']);
     }
-
-    var get_data = JSON.parse(body);
-    callback(get_data['results']);
   });
 }
 
